@@ -8,6 +8,7 @@ public class AdapterManager : MonoBehaviour
     public static AdapterManager Instance { get; private set; }
 
     public SolanaMobileWalletAdapter Adapter { get; private set; }
+    private const string ClusterPrefKey = "SolanaDemo.SelectedCluster";
     public RpcCluster CurrentCluster { get; private set; } = RpcCluster.DevNet;
     public bool IsConnected => Adapter?.Account != null;
     public string ConnectedAddress => Adapter?.Account?.PublicKey?.ToString() ?? "";
@@ -29,7 +30,8 @@ public class AdapterManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         if (Adapter == null)
         {
-            _cache = new DemoAuthorizationCache();
+            RestoreSavedCluster();
+            _cache = new DemoAuthorizationCache(CurrentCluster.ToString());
             CreateAdapter();
             TryAutoReconnect();
         }
@@ -39,7 +41,10 @@ public class AdapterManager : MonoBehaviour
     {
         if (cluster == CurrentCluster) return;
         CurrentCluster = cluster;
+        PlayerPrefs.SetString(ClusterPrefKey, cluster.ToString());
+        PlayerPrefs.Save();
         await _cache.ClearAsync();
+        _cache = new DemoAuthorizationCache(cluster.ToString());
         ConnectedChain = "unknown";
         CreateAdapter();
         OnConnectionChanged?.Invoke();
@@ -49,6 +54,13 @@ public class AdapterManager : MonoBehaviour
     {
         await UpdateChain();
         OnConnectionChanged?.Invoke();
+    }
+
+    private void RestoreSavedCluster()
+    {
+        string saved = PlayerPrefs.GetString(ClusterPrefKey, null);
+        if (!string.IsNullOrEmpty(saved) && System.Enum.TryParse<RpcCluster>(saved, out var cluster))
+            CurrentCluster = cluster;
     }
 
     private void CreateAdapter()

@@ -155,7 +155,6 @@ public class AuthScreenController : MonoBehaviour
         SetStatus(result switch
         {
             ReconnectResult.SilentSuccess s => $"Reconnected silently.\n{s.Account.PublicKey}\nChain: {AdapterManager.Instance.ConnectedChain}",
-            ReconnectResult.FreshAuthorized f => $"Fresh authorization.\n{f.Account.PublicKey}\nChain: {AdapterManager.Instance.ConnectedChain}",
             ReconnectResult.NoCachedSession => "No cached session — login first.",
             ReconnectResult.Failed f => $"Failed: {f.Error.Message}",
             _ => result.GetType().Name,

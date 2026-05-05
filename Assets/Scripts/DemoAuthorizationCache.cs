@@ -5,11 +5,19 @@ using UnityEngine;
 
 public class DemoAuthorizationCache : IAuthorizationCache
 {
-    private const string Key = "SolanaDemo.MWA.Auth";
+    private const string KeyPrefix = "SolanaDemo.MWA.Auth";
+    private readonly string _key;
+
+    public DemoAuthorizationCache(string clusterSuffix = null)
+    {
+        _key = string.IsNullOrEmpty(clusterSuffix)
+            ? KeyPrefix
+            : $"{KeyPrefix}.{clusterSuffix}";
+    }
 
     public Task<AuthorizationRecord?> GetAsync()
     {
-        string json = PlayerPrefs.GetString(Key, null);
+        string json = PlayerPrefs.GetString(_key, null);
         if (string.IsNullOrEmpty(json))
             return Task.FromResult<AuthorizationRecord?>(null);
         try
@@ -26,14 +34,14 @@ public class DemoAuthorizationCache : IAuthorizationCache
     public Task SetAsync(AuthorizationRecord record)
     {
         if (record == null) return Task.CompletedTask;
-        PlayerPrefs.SetString(Key, JsonConvert.SerializeObject(record));
+        PlayerPrefs.SetString(_key, JsonConvert.SerializeObject(record));
         PlayerPrefs.Save();
         return Task.CompletedTask;
     }
 
     public Task ClearAsync()
     {
-        PlayerPrefs.DeleteKey(Key);
+        PlayerPrefs.DeleteKey(_key);
         PlayerPrefs.Save();
         return Task.CompletedTask;
     }
