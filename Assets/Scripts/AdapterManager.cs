@@ -102,6 +102,14 @@ public class AdapterManager : MonoBehaviour
         }
     }
 
+    private void OnApplicationQuit()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using var process = new AndroidJavaClass("android.os.Process");
+        process.CallStatic("killProcess", process.CallStatic<int>("myPid"));
+#endif
+    }
+
     private async System.Threading.Tasks.Task UpdateChain()
     {
         try
